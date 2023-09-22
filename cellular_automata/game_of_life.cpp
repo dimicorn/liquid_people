@@ -1,6 +1,4 @@
 #include "game_of_life.hpp"
-#include <vector>
-#include <cstdlib>
 
 GameOfLife::GameOfLife(): cell_size(5), dl(50), w_width(600), w_height(600),
 	width(w_width - 2 * dl), height(w_height - 2 * dl), c_width(width / cell_size),

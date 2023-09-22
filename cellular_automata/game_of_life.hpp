@@ -2,6 +2,8 @@
 #define GAME_OF_LIFE_HPP
 
 #include <SFML/Graphics.hpp>
+#include <vector>
+#include <cstdlib>
 
 const bool alive = true;
 const bool dead = false;
@@ -25,6 +27,7 @@ private:
 
 	int index(const int i, const int j);
 	bool check_ind(const int i, const int j);
+
 public:
 	GameOfLife();
 	void run();
