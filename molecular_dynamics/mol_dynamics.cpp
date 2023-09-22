@@ -30,25 +30,19 @@ double Simulation::lennard(const double r2) {
 }
 
 void Simulation::initMols() {
-	/*
 	std::random_device dev;
     std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> distv(1, 6);
+    std::uniform_int_distribution<std::mt19937::result_type> distv(1, 9);
     std::uniform_int_distribution<std::mt19937::result_type> distx(100, 400);
 
     for (int i = 0; i < N; ++i) {
         double x = distx(rng);
         double y = distx(rng);
-        double vx = distv(rng) / 10;
-        double vy = distv(rng) / 10;
+        double vx = distv(rng) / 100.;
+        double vy = distv(rng) / 100.;
         Molecule m = Molecule(x, y, vx, vy);
         molecules.push_back(m);
     }
-	*/
-	Molecule m = Molecule(100, 100, 0.1, 0.1);
-	molecules.push_back(m);
-	Molecule m1 = Molecule(150, 150, 0, 0.13);
-	molecules.push_back(m1);
 }
 
 void Simulation::run() {
@@ -57,7 +51,6 @@ void Simulation::run() {
 		window.clear();
 
 		moveMols();
-		// collision_check();
 		drawBox();
 
 		window.display();
@@ -104,6 +97,7 @@ void Simulation::collision_check(Molecule &i) {
         double dx = i.x - j.x;
         double dy = i.y - j.y;
         double r2 = dx * dx + dy * dy;
+
         // elastic collision
         if (std::sqrt(r2) <= i.radius + j.radius) {
             double coef = (i.vx * j.vx + i.vy * j.vy) / r2;
