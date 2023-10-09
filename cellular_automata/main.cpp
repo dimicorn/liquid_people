@@ -1,8 +1,14 @@
 #include "game_of_life.hpp"
+#include "lattice_gas.hpp"
 
 int main() {
-	GameOfLife g = GameOfLife();
-	g.run();
+	/*
+	GameOfLife game;
+	game.run();
+	*/
+
+	LatticeGas gas;
+	gas.run();
 
 	return 0;
 }

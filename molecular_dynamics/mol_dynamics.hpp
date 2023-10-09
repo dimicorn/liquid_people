@@ -1,5 +1,4 @@
-#ifndef MOL_DYNAMICS_HPP
-#define MOL_DYNAMICS_HPP
+#pragma once
 
 #include <SFML/Graphics.hpp>
 #include <random>
@@ -39,4 +38,3 @@ public:
 	Simulation(const int N);
     void run();
 };
-#endif

@@ -1,5 +1,4 @@
-#ifndef GAME_OF_LIFE_HPP
-#define GAME_OF_LIFE_HPP
+#pragma once
 
 #include <SFML/Graphics.hpp>
 #include <vector>
@@ -32,5 +31,3 @@ public:
 	GameOfLife();
 	void run();
 };
-
-#endif
