@@ -1,10 +1,8 @@
 #include "game_of_life.hpp"
 
-GameOfLife::GameOfLife(): cell_size(5), dl(50), w_width(600), w_height(600),
-	width(w_width - 2 * dl), height(w_height - 2 * dl), c_width(width / cell_size),
-	c_height(height / cell_size), window({w_width, w_height}, "Game of Life") {
-		initCells();
-	}
+GameOfLife::GameOfLife() {
+	initCells();
+}
 
 void GameOfLife::run() {
 	sf::Time t = sf::milliseconds(500);
@@ -57,7 +55,7 @@ void GameOfLife::drawBox() {
 	window.draw(right, 2, sf::Lines);
 }
 
-void GameOfLife::drawCell(bool c, const float x, const float y) {
+void GameOfLife::drawCell(const bool &c, const float &x, const float &y) {
 	sf::RectangleShape cell(sf::Vector2f(cell_size, cell_size));
 	cell.setPosition(x, y);
 	if (c == alive) {
@@ -76,18 +74,18 @@ void GameOfLife::drawCells() {
 	}
 }
 
-int GameOfLife::index(const int i, const int j) {
+int GameOfLife::index(const int &i, const int &j) {
 	return i * c_height + j;
 }
 
-bool GameOfLife::check_ind(const int i, const int j) {
+bool GameOfLife::check_ind(const int &i, const int &j) {
 	if (0 <= i && i < c_height && 0 <= j && j < c_width) {
 		return true;
 	}
 	return false;
 }
 
-bool GameOfLife::checkNeighbors(bool c, const int i, const int j) {
+bool GameOfLife::checkNeighbors(const bool &c, const int &i, const int &j) {
 	int alive_neighbors = 0;
 	// top neighbor
 	if (check_ind(i-1, j) && cells[index(i-1, j)] == alive) {

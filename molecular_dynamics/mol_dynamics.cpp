@@ -1,7 +1,8 @@
 #include "mol_dynamics.hpp"
 
-Molecule::Molecule(double x, double y, double vx, double vy, double fx = 0, double fy = 0, double m = 1):
-		x(x), y(y), vx(vx), vy(vy), fx(fx), fy(fy), m(m), radius(10) {};
+Molecule::Molecule(const double &x, const double &y, const double &vx, const double &vy,
+const double &fx, const double &fy, const double &m): 
+x(x), y(y), vx(vx), vy(vy), fx(fx), fy(fy), m(m) {};
 
 bool Molecule::operator ==(const Molecule &m) const {
     if (x == m.x && y == m.y && vx == m.vx && vy == m.vy && fx == m.fx && fy == m.fy) {
@@ -19,12 +20,11 @@ void Molecule::print() {
     printf("m = %lf, x = %lf, y = %lf, vx = %lf, vy = %lf\n", m, x, y, vx, vy);
 }
 
-Simulation::Simulation(const int N): w_width(600), w_height(600), dl(50), width(w_width - 2 * dl),
-height(w_height - 2 * dl), window({w_width, w_height}, "MD Simulation"), N(N), dt(1) {
+Simulation::Simulation(const int &N): N(N) {
 	initMols();
 }
 
-double Simulation::lennard(const double r2) {
+double Simulation::lennard(const double &r2) {
     double r6i = 1. / (r2 * r2 * r2);
     return 4 * (r6i * r6i - r6i);
 }

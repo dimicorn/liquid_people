@@ -1,8 +1,6 @@
 #include "lattice_gas.hpp"
 
-LatticeGas::LatticeGas(): cell_size(100), dl(50), w_width(600), w_height(600),
-width(w_width - 2 * dl), height(w_height - 2 * dl), c_width(width / cell_size),
-c_height(height / (cell_size * sqrt3_2)), window({w_width, w_height}, "Lattice Gas Cellular Automata") {
+LatticeGas::LatticeGas() {
     initNodes();
 } 
 
@@ -31,6 +29,7 @@ void LatticeGas::initNodes() {
 	}
 }
 
+/*
 void LatticeGas::drawNodes() {
 	for (auto &n : nodes) {
 		if (!(n.isEmpty && n.isWall)) {
@@ -38,8 +37,10 @@ void LatticeGas::drawNodes() {
         	sf::Vertex(sf::Vector2f(dl + , dl), sf::Color::Green),
         	sf::Vertex(sf::Vector2f(dl + cell_size / 2, dl + cell_size * sqrt(3)/2), sf::Color::Green)
 			};
-
-
+        }
+    }
+}
+*/
 
 void LatticeGas::drawTriangle() {
     sf::Vertex left[] = {

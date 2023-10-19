@@ -27,11 +27,14 @@ struct Node {
 
 class LatticeGas {
 private:
-	const double cell_size;
-	const unsigned int w_width, w_height;
-    const double dl, width, height;
-    const double c_width, c_height;
-    sf::RenderWindow window;
+	const double cell_size = 100;
+	const unsigned int w_width = 600, w_height = 600;
+    const double dl = 50;
+    const double width = w_width - 2 * dl;
+    const double height = w_height - 2 * dl;
+    const double c_width = width / cell_size, c_height = height / (cell_size * sqrt3_2);
+    sf::RenderWindow window = sf::RenderWindow(sf::VideoMode(w_width, w_height), 
+    "Lattice Gas Cellular Automata");
 	std::vector<Node> nodes;
 
 	void initNodes();
