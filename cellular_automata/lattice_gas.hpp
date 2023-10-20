@@ -6,6 +6,7 @@
 #include <iostream>
 
 const double sqrt3_2 = sqrt(3) / 2;
+const double sqrt3 = sqrt(3);
 
 struct UnitVector {
 	double x, y;
@@ -27,19 +28,20 @@ struct Node {
 
 class LatticeGas {
 private:
-	const double cell_size = 100;
-	const unsigned int w_width = 600, w_height = 600;
+	const double cell_size = 50;
+    const double c_width = 12, c_height = 12;
     const double dl = 50;
-    const double width = w_width - 2 * dl;
-    const double height = w_height - 2 * dl;
-    const double c_width = width / cell_size, c_height = height / (cell_size * sqrt3_2);
+
+    const double width = c_width * cell_size;
+    const double height = c_width * cell_size * sqrt3_2;
+	const unsigned int w_width = width + 2 * dl, w_height = height + 2 * dl;
     sf::RenderWindow window = sf::RenderWindow(sf::VideoMode(w_width, w_height), 
     "Lattice Gas Cellular Automata");
 	std::vector<Node> nodes;
 
 	void initNodes();
-	void drawTriangle();
-	void drawRTriangle();
+	void drawTriangle(const int &i, const int &j);
+	void drawRTriangle(const int &i, const int &j);
 	void drawBox();
 	void handleEvents();
 

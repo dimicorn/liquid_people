@@ -10,7 +10,13 @@ void LatticeGas::run() {
         window.clear();
 
 		drawBox();
-		
+
+        for (int j = 0; j < c_width / 2; ++j) {
+            for (int i = 0; i < 2 * c_height + 1; ++i) {
+                drawTriangle(i, j);
+                drawRTriangle(i, j);
+            }
+        }
 
         window.display();
         handleEvents();
@@ -35,25 +41,34 @@ void LatticeGas::drawNodes() {
 		if (!(n.isEmpty && n.isWall)) {
     		sf::Vertex right[] = {
         	sf::Vertex(sf::Vector2f(dl + , dl), sf::Color::Green),
-        	sf::Vertex(sf::Vector2f(dl + cell_size / 2, dl + cell_size * sqrt(3)/2), sf::Color::Green)
+        	sf::Vertex(sf::Vector2f(dl + cell_size / 2, dl + cell_size * sqrt(3)/2),
+            sf::Color::Green)
 			};
         }
     }
 }
 */
 
-void LatticeGas::drawTriangle() {
+void LatticeGas::drawTriangle(const int &i, const int &j) {
     sf::Vertex left[] = {
-        sf::Vertex(sf::Vector2f(dl, dl), sf::Color::Green),
-        sf::Vertex(sf::Vector2f(dl - cell_size / 2, dl + cell_size * sqrt(3)/2), sf::Color::Green)
+        sf::Vertex(sf::Vector2f(dl + 0.5 * (i - 1) * cell_size,
+        dl + (0.5 * (i%2 + 1) + j) * sqrt3 * cell_size),
+        sf::Color::Green),
+        sf::Vertex(sf::Vector2f(dl + 0.5 * i * cell_size,
+        dl + (0.5 * (i%2) + j) * sqrt3 * cell_size), sf::Color::Green)
     };
     sf::Vertex right[] = {
-        sf::Vertex(sf::Vector2f(dl, dl), sf::Color::Green),
-        sf::Vertex(sf::Vector2f(dl + cell_size / 2, dl + cell_size * sqrt(3)/2), sf::Color::Green)
+        sf::Vertex(sf::Vector2f(dl + 0.5 * i * cell_size,
+        dl + (0.5 * (i%2) + j) * sqrt3 * cell_size), sf::Color::Green),
+        sf::Vertex(sf::Vector2f(dl + 0.5 * (i + 1) * cell_size,
+        dl + (0.5 * (i%2 + 1) + j) * sqrt3 * cell_size), sf::Color::Green)
     };
     sf::Vertex bottom[] = {
-        sf::Vertex(sf::Vector2f(dl - cell_size / 2, dl + cell_size * sqrt(3)/2), sf::Color::Green),
-        sf::Vertex(sf::Vector2f(dl + cell_size / 2, dl + cell_size * sqrt(3)/2), sf::Color::Green)
+        sf::Vertex(sf::Vector2f(dl + 0.5 * (i + 1) * cell_size,
+        dl + (0.5 * (i%2 + 1) + j) * sqrt3 * cell_size), sf::Color::Green),
+        sf::Vertex(sf::Vector2f(dl + 0.5 * (i - 1) * cell_size,
+        dl + (0.5 * (i%2 + 1) + j) * sqrt3 * cell_size),
+        sf::Color::Green),
     };
 
     window.draw(left, 2, sf::Lines);
@@ -61,24 +76,31 @@ void LatticeGas::drawTriangle() {
     window.draw(bottom, 2, sf::Lines);
 }
 
-void LatticeGas::drawRTriangle() {
-    sf::Vertex top[] = {
-        sf::Vertex(sf::Vector2f(dl, dl), sf::Color::Green),
-        sf::Vertex(sf::Vector2f(dl + cell_size, dl), sf::Color::Green)
-    };
+void LatticeGas::drawRTriangle(const int &i, const int &j) {
     sf::Vertex left[] = {
-        sf::Vertex(sf::Vector2f(dl, dl), sf::Color::Green),
-        sf::Vertex(sf::Vector2f(dl + cell_size / 2, dl + cell_size * sqrt(3)/2), sf::Color::Green)
+        sf::Vertex(sf::Vector2f(dl + 0.5 * (i - 1) * cell_size,
+        dl + (0.5 * (-i%2 + 1) + j) * sqrt3 * cell_size), sf::Color::Green),
+        sf::Vertex(sf::Vector2f(dl + 0.5 * i * cell_size,
+        dl + (0.5 * (-i%2) + j + 1) * sqrt3 * cell_size), sf::Color::Green)
     };
     sf::Vertex right[] = {
-        sf::Vertex(sf::Vector2f(dl + cell_size, dl), sf::Color::Green),
-        sf::Vertex(sf::Vector2f(dl + cell_size / 2, dl + cell_size * sqrt(3)/2), sf::Color::Green)
+        sf::Vertex(sf::Vector2f(dl + 0.5 * i * cell_size,
+        dl + (0.5 * (-i%2) + j + 1) * sqrt3 * cell_size), sf::Color::Green),
+        sf::Vertex(sf::Vector2f(dl + 0.5 * (i + 1) * cell_size,
+        dl + (0.5 * (-i%2 + 1) + j) * sqrt3 * cell_size), sf::Color::Green)
+    };
+    sf::Vertex top[] = {
+        sf::Vertex(sf::Vector2f(dl + 0.5 * (i + 1) * cell_size,
+        dl + (0.5 * (-i%2 + 1) + j) * sqrt3 * cell_size), sf::Color::Green),
+        sf::Vertex(sf::Vector2f(dl + 0.5 * (i - 1) * cell_size,
+        dl + (0.5 * (-i%2 + 1) + j) * sqrt3 * cell_size), sf::Color::Green),
     };
 
     window.draw(top, 2, sf::Lines);
     window.draw(left, 2, sf::Lines);
     window.draw(right, 2, sf::Lines);
 }
+
 void LatticeGas::drawBox() {
     sf::Vertex bottom[] = {
         sf::Vertex(sf::Vector2f(dl, height + dl), sf::Color::Red),
