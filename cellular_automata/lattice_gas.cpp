@@ -2,16 +2,24 @@
 
 LatticeGas::LatticeGas() {
     initNodes();
+    /*
+    for (const auto &n : nodes) {
+        if (n.y == height + dl) {
+            std::cout << n.x << ' ' << n.y << ' ';
+            std::cout << n.velocity.x << ' ' << n.velocity.y << '\n';
+        }
+    }
+    */
 } 
 
 void LatticeGas::run() {
-    
 	sf::Time t = sf::milliseconds(500);
     while(window.isOpen()) {
         window.clear();
 
         drawGrid();
         drawNodes();
+        updateNodes();
         window.display();
         handleEvents();
         sf::sleep(t);
@@ -23,6 +31,159 @@ std::pair<UnitVector, bool> LatticeGas::randomVelocity(const int &i, const int &
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> dist8(1, 8);
     int rnd = dist8(rng);
+    // FIXME : use switch-case + scaling odd c_width and c_height
+    // Top left node
+    if (i == 0 && j == 0) {
+        if (rnd % 5 == 0) {
+            return std::make_pair(zero, true);
+        } else if (rnd % 5 == 1) {
+            return std::make_pair(bottom_left, false);
+        } else if (rnd % 5 == 2) {
+            return std::make_pair(bottom_right, false);
+        } else if (rnd % 5 == 3) {
+            return std::make_pair(right, false);
+        } else {
+            return std::make_pair(zero, false);
+        }
+    // Top right node
+    } else if (i == c_height && j == 0) {
+        if (rnd % 5 == 0) {
+            return std::make_pair(zero, true);
+        } else if (rnd % 5 == 1) {
+            return std::make_pair(left, false);
+        } else if (rnd % 5 == 2) {
+            return std::make_pair(bottom_left, false);
+        } else if (rnd % 5 == 3) {
+            return std::make_pair(bottom_right, false);
+        } else if (rnd % 5 == 4) {
+            return std::make_pair(zero, false);
+        }
+    // Rest of the top nodes
+    } else if (j == 0) {
+        if (rnd % 6 == 0) {
+            return std::make_pair(zero, true);
+        } else if (rnd % 6 == 1) {
+            return std::make_pair(left, false);
+        } else if (rnd % 6 == 2) {
+            return std::make_pair(right, false);
+        } else if (rnd % 6 == 3) {
+            return std::make_pair(bottom_left, false);
+        } else if (rnd % 6 == 4) {
+            return std::make_pair(bottom_right, false);
+        } else if (rnd % 6 == 5) {
+            return std::make_pair(zero, false);
+        }
+    }
+
+    // Bottom left node
+    if (i == 0 && j == c_width) {
+        if (rnd % 5 == 0) {
+            return std::make_pair(zero, true);
+        } else if (rnd % 5 == 1) {
+            return std::make_pair(top_left, false);
+        } else if (rnd % 5 == 2) {
+            return std::make_pair(top_right, false);
+        } else if (rnd % 5 == 3) {
+            return std::make_pair(right, false);
+        } else if (rnd % 5 == 4) {
+            return std::make_pair(zero, false);
+        }
+    // Bottom right node
+    } else if (j % 2 == 0 && i == c_height && j == c_width ||
+            i == (c_height + 1) && j == c_width) {
+        if (rnd % 5 == 0) {
+            return std::make_pair(zero, true);
+        } else if (rnd % 5 == 1) {
+            return std::make_pair(left, false);
+        } else if (rnd % 5 == 2) {
+            return std::make_pair(top_left, false);
+        } else if (rnd % 5 == 3) {
+            return std::make_pair(top_right, false);
+        } else if (rnd % 5 == 4) {
+            return std::make_pair(zero, false);
+        }
+    // Rest of the bottom nodes
+    } else if (j == c_width) {
+        if (rnd % 6 == 0) {
+            return std::make_pair(zero, true);
+        } else if (rnd % 6 == 1) {
+            return std::make_pair(left, false);
+        } else if (rnd % 6 == 2) {
+            return std::make_pair(right, false);
+        } else if (rnd % 6 == 3) {
+            return std::make_pair(top_left, false);
+        } else if (rnd % 6 == 4) {
+            return std::make_pair(top_right, false);
+        } else if (rnd % 6 == 5) {
+            return std::make_pair(zero, false);
+        }
+    }
+
+    // Left even rows
+    if (i == 0 && j % 2 == 0 && j != 0 && j != c_width) {
+        if (rnd % 7 == 0) {
+            return std::make_pair(zero, true);
+        } else if (rnd % 7 == 1) {
+            return std::make_pair(top_left, false);
+        } else if (rnd % 7 == 2) {
+            return std::make_pair(top_right, false);
+        } else if (rnd % 7 == 3) {
+            return std::make_pair(right, false);
+        } else if (rnd % 7 == 4) {
+            return std::make_pair(bottom_left, false);
+        } else if (rnd % 7 == 5) {
+            return std::make_pair(bottom_right, false);
+        } else if (rnd % 7 == 6) {
+            return std::make_pair(zero, false);
+        }
+    // Left odd rows
+    } else if (i == 0 && j % 2 == 1 && j != c_width) {
+        if (rnd % 5 == 0) {
+            return std::make_pair(zero, true);
+        } else if (rnd % 5 == 1) {
+            return std::make_pair(top_right, false);
+        } else if (rnd % 5 == 2) {
+            return std::make_pair(right, false);
+        } else if (rnd % 5 == 3) {
+            return std::make_pair(bottom_right, false);
+        } else if (rnd % 5 == 4) {
+            return std::make_pair(zero, false);
+        }
+    }
+
+    // Right even rows
+    if (i == c_height && j % 2 == 0 && j != 0 && j != c_width) {
+        if (rnd % 7 == 0) {
+            return std::make_pair(zero, true);
+        } else if (rnd % 7 == 1) {
+            return std::make_pair(top_left, false);
+        } else if (rnd % 7 == 2) {
+            return std::make_pair(top_right, false);
+        } else if (rnd % 7 == 3) {
+            return std::make_pair(left, false);
+        } else if (rnd % 7 == 4) {
+            return std::make_pair(bottom_left, false);
+        } else if (rnd % 7 == 5) {
+            return std::make_pair(bottom_right, false);
+        } else if (rnd % 7 == 6) {
+            return std::make_pair(zero, false);
+        }
+    // Right odd rows
+    } else if (i == c_height + 1 && j % 2 == 1 && j != c_width) {
+        if (rnd % 5 == 0) {
+            return std::make_pair(zero, true);
+        } else if (rnd % 5 == 1) {
+            return std::make_pair(top_left, false);
+        } else if (rnd % 5 == 2) {
+            return std::make_pair(left, false);
+        } else if (rnd % 5 == 3) {
+            return std::make_pair(bottom_left, false);
+        } else if (rnd % 5 == 4) {
+            return std::make_pair(zero, false);
+        }
+    }
+
+    // Internal nodes
     if (rnd % 8 == 0) {
         return std::make_pair(zero, true);
     } else if (rnd % 8 == 1) {
@@ -40,7 +201,6 @@ std::pair<UnitVector, bool> LatticeGas::randomVelocity(const int &i, const int &
     } else {
         return std::make_pair(zero, false);
     }
-    
 }
 
 void LatticeGas::initNodes() {
@@ -83,8 +243,43 @@ void LatticeGas::drawNodes() {
     }
 }
 
+void LatticeGas::updateNodes() {
+    for (int j = 0; j <= c_width; ++j) {
+        if (j % 2 == 0) {
+            for (int i = 0; i <= c_height; ++i) {
+                moveNode(nodes[index(i, j)]);
+            }
+        } else {
+            for (int i = 0; i <= c_height + 1; ++i) {
+                moveNode(nodes[index(i, j)]);
+            }
+        }
+    }
+    for (int j = 0; j <= c_width; ++j) {
+        if (j % 2 == 0) {
+            for (int i = 0; i <= c_height; ++i) {
+                checkCollision(nodes[index(i, j)]);
+            }
+        } else {
+            for (int i = 0; i <= c_height + 1; ++i) {
+                checkCollision(nodes[index(i, j)]);
+            }
+        }
+    }
+}
+
+void LatticeGas::moveNode(Node &n) {
+    UnitVector vel = n.velocity;
+    n.x += vel.x * cell_size;
+    n.y += vel.y * cell_size;
+}
+
+void LatticeGas::checkCollision(Node &n) {
+
+}
+
 int LatticeGas::index(const int &i, const int &j) {
-    return j * c_width + i;
+    return j * (c_height + 1) + i + j / 2;
 }
 
 void LatticeGas::drawNode(const Node &n) {
@@ -97,14 +292,13 @@ void LatticeGas::drawNode(const Node &n) {
        double radius = cell_size / 16;
        sf::CircleShape node(radius);
        node.setPosition(n.x - radius, n.y - radius);
-       node.setFillColor(sf::Color::Green);
+       node.setFillColor(sf::Color::White);
        window.draw(node);        
        return;
    }
 
    sf::Vector2f start = sf::Vector2f(n.x, n.y);
    sf::Vector2f end;
-
    
    if (vel == left) {
         end = sf::Vector2f(n.x + 0.5 * left.x * cell_size, n.y + 0.5 * left.y * cell_size);
@@ -123,8 +317,8 @@ void LatticeGas::drawNode(const Node &n) {
    }
 
     sf::Vertex node[] = {
-        sf::Vertex(start, sf::Color::Green),
-        sf::Vertex(end, sf::Color::Green)
+        sf::Vertex(start, sf::Color::White),
+        sf::Vertex(end, sf::Color::White)
     };
     window.draw(node, 2, sf::Lines);
 }

@@ -20,7 +20,7 @@ struct UnitVector {
 const UnitVector zero = {0, 0};
 const UnitVector left = {-1, 0};
 const UnitVector right = {1, 0};
-const UnitVector top_left = {-0.5, sqrt3_2};
+const UnitVector top_left = {-0.5, -sqrt3_2};
 const UnitVector top_right = {0.5, -sqrt3_2};
 const UnitVector bottom_left = {-0.5, sqrt3_2};
 const UnitVector bottom_right = {0.5, sqrt3_2};
@@ -38,7 +38,7 @@ private:
     const double dl = 50;
 
     const double width = c_width * cell_size;
-    const double height = c_width * cell_size * sqrt3_2;
+    const double height = c_height * cell_size * sqrt3_2;
 	const unsigned int w_width = width + 2 * dl, w_height = height + 2 * dl;
     sf::RenderWindow window = sf::RenderWindow(sf::VideoMode(w_width, w_height), 
     "Lattice Gas Cellular Automata");
@@ -50,6 +50,8 @@ private:
     void drawNode(const Node &n);
     int index(const int &i, const int &j);
     void updateNodes();
+    void moveNode(Node &n);
+    void checkCollision(Node &n);
     void drawGrid();
 	void drawTriangle(const int &i, const int &j);
 	void drawRTriangle(const int &i, const int &j);
