@@ -4,12 +4,17 @@
 #include <vector>
 #include <cstdlib>
 #include <iostream>
+#include <random>
 
 const double sqrt3_2 = sqrt(3) / 2;
 const double sqrt3 = sqrt(3);
 
 struct UnitVector {
 	double x, y;
+
+    bool operator==(const UnitVector &v) const {
+        return (x == v.x && y == v.y);
+    }
 };
 
 const UnitVector zero = {0, 0};
@@ -39,7 +44,13 @@ private:
     "Lattice Gas Cellular Automata");
 	std::vector<Node> nodes;
 
+    std::pair<UnitVector, bool> randomVelocity(const int &i, const int &j);
 	void initNodes();
+    void drawNodes();
+    void drawNode(const Node &n);
+    int index(const int &i, const int &j);
+    void updateNodes();
+    void drawGrid();
 	void drawTriangle(const int &i, const int &j);
 	void drawRTriangle(const int &i, const int &j);
 	void drawBox();
