@@ -2,39 +2,15 @@
 
 #include <SFML/Graphics.hpp>
 #include <vector>
-#include <cstdlib>
+#include <stdexcept>
 #include <iostream>
 #include <random>
-
-const double sqrt3_2 = sqrt(3) / 2;
-const double sqrt3 = sqrt(3);
-
-struct UnitVector {
-	double x, y;
-
-    bool operator==(const UnitVector &v) const {
-        return (x == v.x && y == v.y);
-    }
-};
-
-const UnitVector zero = {0, 0};
-const UnitVector left = {-1, 0};
-const UnitVector right = {1, 0};
-const UnitVector top_left = {-0.5, -sqrt3_2};
-const UnitVector top_right = {0.5, -sqrt3_2};
-const UnitVector bottom_left = {-0.5, sqrt3_2};
-const UnitVector bottom_right = {0.5, sqrt3_2};
-
-struct Node {
-	UnitVector velocity;
-	double x, y;
-	bool isEmpty, isWall;
-};
+#include "node.hpp"
 
 class LatticeGas {
 private:
 	const double cell_size = 50;
-    const double c_width = 12, c_height = 12;
+    const double c_width = 12, c_height = 12; // should be even numbers
     const double dl = 50;
 
     const double width = c_width * cell_size;
@@ -44,18 +20,18 @@ private:
     "Lattice Gas Cellular Automata");
 	std::vector<Node> nodes;
 
-    std::pair<UnitVector, bool> randomVelocity(const int &i, const int &j);
+    std::pair<UnitVector, int> randomVelocity(const int &i, const int &j);
 	void initNodes();
     void drawNodes();
     void drawNode(const Node &n);
     int index(const int &i, const int &j);
     void updateNodes();
-    void moveNode(Node &n);
+    bool check_ind(const int &i, const int &j);
+    Node checkNeighbors(Node &n, const int &i, const int &j);
     void checkCollision(Node &n);
     void drawGrid();
 	void drawTriangle(const int &i, const int &j);
 	void drawRTriangle(const int &i, const int &j);
-	void drawBox();
 	void handleEvents();
 
 public:
