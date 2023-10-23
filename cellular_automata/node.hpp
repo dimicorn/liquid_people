@@ -6,7 +6,7 @@ class Node {
 public:
     std::unordered_set<UnitVector, Hash> velocities;
     double x, y;
-    int particleCount; // same as velocities.size()
+    unsigned long int particleCount; // same as velocities.size()
     bool isWall; // for testing purposes
                  
     Node(const std::unordered_set<UnitVector, Hash> &vels = {}, const double &x = 0, 

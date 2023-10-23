@@ -21,20 +21,70 @@ private:
 	std::vector<Node> nodes;
 
     std::pair<UnitVector, int> randomVelocity(const int &i, const int &j);
-	void initNodes();
-    void drawNodes();
+	void initNodes(const int &N);
     void drawNode(const Node &n);
-    int index(const int &i, const int &j);
     void updateNodes();
     bool check_ind(const int &i, const int &j);
     Node checkNeighbors(Node &n, const int &i, const int &j);
-    void checkCollision(Node &n);
-    void drawGrid();
+    void checkCollision(Node &n, const int &i, const int &j);
 	void drawTriangle(const int &i, const int &j);
 	void drawRTriangle(const int &i, const int &j);
-	void handleEvents();
+
+    void drawNodes() {
+        for (const auto &n : nodes) {
+            drawNode(n);
+        }
+    }
+
+    int index(const int &i, const int &j) {
+        return j * (c_height + 1) + i + j / 2;
+    }
+
+    void drawGrid() {
+        for (int j = 0; j < c_width / 2; ++j) {
+            for (int i = 0; i < 2 * c_height + 1; ++i) {
+                drawTriangle(i, j);
+                drawRTriangle(i, j);
+            }
+        }
+    }
+
+	void handleEvents() {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                window.close();
+            }
+        }
+    }
 
 public:
-	LatticeGas();
-	void run();
+	LatticeGas(const int &N) {
+        initNodes(N);
+        int count = 0;
+        for (const auto &n : nodes) {
+            count += n.particleCount;
+        }
+        std::cout << "Number of particles: " << count << '\n';
+        std::cout << "Number of nodes: " << nodes.size() << '\n';
+        std::cout << "Density of particles: " << static_cast<double>(count) / nodes.size() << '\n';
+    }
+    
+	void run() {
+        sf::Time t = sf::milliseconds(100);
+        // int count = 0;
+        while(window.isOpen()) {
+            window.clear();
+
+            drawGrid();
+            drawNodes();
+            // if (count < 7) {
+                updateNodes();
+                // ++count;
+            // }
+            window.display();
+            handleEvents();
+            sf::sleep(t);
+        }
+    }
 };

@@ -1,34 +1,5 @@
 #include "lattice_gas.hpp"
 
-LatticeGas::LatticeGas() {
-    initNodes();
-    int count = 0;
-    for (const auto &n : nodes) {
-        count += n.particleCount;
-    }
-    std::cout << "Number of particles: " << count << '\n';
-    std::cout << "Number of nodes: " << nodes.size() << '\n';
-    std::cout << "Density of particles: " << static_cast<double>(count) / nodes.size() << '\n';
-} 
-
-void LatticeGas::run() {
-	sf::Time t = sf::milliseconds(1500);
-    int count = 0;
-    while(window.isOpen()) {
-        window.clear();
-
-        drawGrid();
-        drawNodes();
-        if (count < 13) {
-            updateNodes();
-            ++count;
-        }
-        window.display();
-        handleEvents();
-        sf::sleep(t);
-	}	
-}
-
 std::pair<UnitVector, int> LatticeGas::randomVelocity(const int &i, const int &j) {
     std::random_device dev;
     std::mt19937 rng(dev());
@@ -101,7 +72,7 @@ std::pair<UnitVector, int> LatticeGas::randomVelocity(const int &i, const int &j
         }
     // Bottom right node
     } else if ((j % 2 == 0 && i == c_height && j == c_width) ||
-            (i == (c_height + 1) && j == c_width)) {
+            (j % 2 == 1 && i == (c_height + 1) && j == c_width)) {
         switch (rnd5 % 5) {
             case 0:
                 return std::make_pair(zero, 0);
@@ -202,7 +173,7 @@ std::pair<UnitVector, int> LatticeGas::randomVelocity(const int &i, const int &j
     // Internal nodes
     switch (rnd8 % 8) {
         case 0:
-            return std::make_pair(zero, 1);
+            return std::make_pair(zero, 0);
         case 1:
             return std::make_pair(left, 1);
         case 2:
@@ -223,14 +194,50 @@ std::pair<UnitVector, int> LatticeGas::randomVelocity(const int &i, const int &j
     exit(1);
 }
 
-void LatticeGas::initNodes() {
+void LatticeGas::initNodes(const int &N) {
     Node n;
     std::unordered_set<UnitVector, Hash> vels = {};
     UnitVector vel;
     int particleCount;
     bool isWall;
 
+    // int count = 0;
+
     for (int j = 0; j <= c_width; ++j) {
+        if (j % 2 == 0) {
+            for (int i = 0; i <= c_height; ++i) {
+                isWall = false;
+                particleCount = 0;
+                vels = {zero};
+                if (j == 4 || j == 8) {
+                    std::pair<UnitVector, int> res = randomVelocity(i, j);
+                    vel = res.first, particleCount = res.second;
+                    vels = {vel};
+                    if (particleCount != 0) {
+                        // ++count;
+                    }
+                }
+                if (i == 0 || i == c_height || j == 0 || j == c_width) {
+                    isWall = true;
+                }
+                n = {vels, dl + i * cell_size, dl + j * sqrt3_2 * cell_size,
+                    particleCount, isWall};
+                nodes.push_back(n);
+            }
+        } else if (j % 2 == 1) {
+            for (int i = 0; i <= c_height + 1; ++i) {
+                isWall = false;
+                particleCount = 0;
+                vels = {zero};
+                if (i == 0 || i == c_height || j == 0 || j == c_width) {
+                    isWall = true;
+                }
+                n = {vels, dl + (i-0.5) * cell_size, dl + j * sqrt3_2 * cell_size,
+                    particleCount, isWall};
+                nodes.push_back(n);
+            }
+        }
+        /*
         if (j % 2 == 0) {
             for (int i = 0; i <= c_height; ++i) {
                 isWall = false;
@@ -258,12 +265,7 @@ void LatticeGas::initNodes() {
                 nodes.push_back(n);
             }
         }
-    }
-}
-
-void LatticeGas::drawNodes() {
-    for (const auto &n : nodes) {
-        drawNode(n);
+        */
     }
 }
 
@@ -284,11 +286,11 @@ void LatticeGas::updateNodes() {
     for (int j = 0; j <= c_width; ++j) {
         if (j % 2 == 0) {
             for (int i = 0; i <= c_height; ++i) {
-                checkCollision(nodes[index(i, j)]);
+                checkCollision(nodes[index(i, j)], i, j);
             }
         } else {
             for (int i = 0; i <= c_height + 1; ++i) {
-                checkCollision(nodes[index(i, j)]);
+                checkCollision(nodes[index(i, j)], i, j);
             }
         }
     }
@@ -306,14 +308,13 @@ bool LatticeGas::check_ind(const int &i, const int &j) {
 }
 
 Node LatticeGas::checkNeighbors(Node &n, const int &i, const int &j) {
-    // std::vector<Node> upd;
     Node n_upd;
     n_upd.x = n.x;
     n_upd.y = n.y;
     n_upd.isWall = n.isWall;
 
     // zero velocity particle
-    if (n.velocities.find(zero) != n.velocities.end()) {
+    if (n.velocities.find(zero) != n.velocities.end() && n.particleCount == n.velocities.size()) {
         n_upd.velocities.insert(zero);
         ++n_upd.particleCount;
     }
@@ -324,8 +325,9 @@ Node LatticeGas::checkNeighbors(Node &n, const int &i, const int &j) {
     nodes[index(i-1, j)].velocities.find(right) != nodes[index(i-1, j)].velocities.end()) {
         n_upd.velocities.insert(right);
         ++n_upd.particleCount;
+    }
     // right neighbor & left velocity
-    } else if (check_ind(i+1, j) &&
+    if (check_ind(i+1, j) &&
     nodes[index(i+1, j)].velocities.find(left) != nodes[index(i+1, j)].velocities.end()) {
         n_upd.velocities.insert(left);
         ++n_upd.particleCount;
@@ -338,20 +340,23 @@ Node LatticeGas::checkNeighbors(Node &n, const int &i, const int &j) {
         nodes[index(i, j-1)].velocities.end()) {
             n_upd.velocities.insert(bottom_right);
             ++n_upd.particleCount;
+        }
         // top right neighbor & bottom left velocity
-        } else if (check_ind(i+1, j-1) &&
+        if (check_ind(i+1, j-1) &&
         nodes[index(i+1, j-1)].velocities.find(bottom_left) !=
         nodes[index(i+1, j-1)].velocities.end()) {
             n_upd.velocities.insert(bottom_left);
             ++n_upd.particleCount;
+        }
         // bottom left neighbor & top right velocity
-        } else if (check_ind(i, j+1) &&
+        if (check_ind(i, j+1) &&
         nodes[index(i, j+1)].velocities.find(top_right) !=
         nodes[index(i, j+1)].velocities.end()) {
             n_upd.velocities.insert(top_right);
             ++n_upd.particleCount;
+        }
         // bottom right neighbor & top left velocity
-        } else if (check_ind(i+1, j+1) &&
+        if (check_ind(i+1, j+1) &&
         nodes[index(i+1, j+1)].velocities.find(top_left) !=
         nodes[index(i+1, j+1)].velocities.end()) {
             n_upd.velocities.insert(top_left);
@@ -364,20 +369,23 @@ Node LatticeGas::checkNeighbors(Node &n, const int &i, const int &j) {
         nodes[index(i-1, j-1)].velocities.end()) {
             n_upd.velocities.insert(bottom_right);
             ++n_upd.particleCount;
+        }
         // top right neighbor & bottom left velocity
-        } else if (check_ind(i, j-1) &&
+        if (check_ind(i, j-1) &&
         nodes[index(i, j-1)].velocities.find(bottom_left) !=
         nodes[index(i, j-1)].velocities.end()) {
             n_upd.velocities.insert(bottom_left);
             ++n_upd.particleCount;
+        }
         // bottom left neighbor & top right velocity
-        } else if (check_ind(i-1, j+1) &&
+        if (check_ind(i-1, j+1) &&
         nodes[index(i-1, j+1)].velocities.find(top_right) !=
         nodes[index(i-1, j+1)].velocities.end()) {
             n_upd.velocities.insert(top_right);
             ++n_upd.particleCount;
+        }
         // bottom right neighbor & top left velocity
-        } else if (check_ind(i, j+1) &&
+        if (check_ind(i, j+1) &&
         nodes[index(i, j+1)].velocities.find(top_left) !=
         nodes[index(i, j+1)].velocities.end()) {
             n_upd.velocities.insert(top_left);
@@ -387,13 +395,202 @@ Node LatticeGas::checkNeighbors(Node &n, const int &i, const int &j) {
     return n_upd;
 }
 
-void LatticeGas::checkCollision(Node &n) {
-    
+void LatticeGas::checkCollision(Node &n, const int &i, const int &j) {
+    // FIXME: Refactor this shit
+    // Wall collision
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dist(1, 10);
+    int rnd = dist(rng);
 
-}
+    // Top left node
+    if (i == 0 && j == 0) {
+        for (const auto &vel : n.velocities) {
+            if (vel == left) {
+                auto v = n.velocities.extract(left);
+                v.value() = bottom_left;
+                n.velocities.insert(std::move(v));
+            } else if (vel == top_left) {
+                auto v = n.velocities.extract(top_left);
+                if (rnd % 2 == 0) {
+                    v.value() = bottom_left;
+                } else {
+                    v.value() = right;
+                }
+                n.velocities.insert(std::move(v));
+            } else if (vel == top_right) {
+                auto v = n.velocities.extract(top_right);
+                v.value() = right;
+                n.velocities.insert(std::move(v));
+            }
+        }
+    // Top right node
+    } else if (i == c_height && j == 0) {
+        for (const auto &vel : n.velocities) {
+            if (vel == right) {
+                auto v = n.velocities.extract(right);
+                v.value() = bottom_right;
+                n.velocities.insert(std::move(v));
+            } else if (vel == top_left) {
+                auto v = n.velocities.extract(top_left);
+                v.value() = left;
+                n.velocities.insert(std::move(v));
+            } else if (vel == top_right) {
+                auto v = n.velocities.extract(top_right);
+                if (rnd % 2 == 0) {
+                    v.value() = bottom_right;
+                } else {
+                    v.value() = left;
+                }
+                n.velocities.insert(std::move(v));
+            }
+        }
+    // Other top row nodes
+    } else if (j == 0) {
+        for (const auto &vel : n.velocities) {
+            if (vel == top_left) {
+                auto v = n.velocities.extract(top_left);
+                v.value() = bottom_left;
+                n.velocities.insert(std::move(v));
+            } else if (vel == top_right) {
+                auto v = n.velocities.extract(top_right);
+                v.value() = bottom_right;
+                n.velocities.insert(std::move(v));
+            }
+        }
+    }
 
-int LatticeGas::index(const int &i, const int &j) {
-    return j * (c_height + 1) + i + j / 2;
+    // Bottom left node
+    if (i == 0 && j == c_width) {
+        for (const auto &vel : n.velocities) {
+            if (vel == left) {
+                auto v = n.velocities.extract(left);
+                v.value() = top_left;
+                n.velocities.insert(std::move(v));
+            } else if (vel == bottom_left) {
+                auto v = n.velocities.extract(bottom_left);
+                if (rnd % 2 == 0) {
+                    v.value() = top_left;
+                } else {
+                    v.value() = right;
+                }
+                n.velocities.insert(std::move(v));
+            } else if (vel == bottom_right) {
+                auto v = n.velocities.extract(bottom_right);
+                v.value() = right;
+                n.velocities.insert(std::move(v));
+            }
+        }
+    // Bottom right node
+    } else if ((j % 2 == 0 && i == c_height && j == c_width) ||
+            (j % 2 == 1 && i == c_height + 1 && j == c_width)) {
+        for (const auto &vel : n.velocities) {
+            if (vel == right) {
+                auto v = n.velocities.extract(right);
+                v.value() = top_right;
+                n.velocities.insert(std::move(v));
+            } else if (vel == bottom_left) {
+                auto v = n.velocities.extract(bottom_left);
+                v.value() = left;
+                n.velocities.insert(std::move(v));
+            } else if (vel == bottom_right) {
+                auto v = n.velocities.extract(bottom_right);
+                if (rnd % 2 == 0) {
+                    v.value() = top_right;
+                } else {
+                    v.value() = left;
+                }
+                n.velocities.insert(std::move(v));
+            }
+        }
+    // Other bottom nodes
+    } else if (j == c_width) {
+        for (const auto &vel : n.velocities) {
+            if (vel == bottom_left) {
+                auto v = n.velocities.extract(bottom_left);
+                v.value() = top_left;
+                n.velocities.insert(std::move(v));
+            } else if (vel == bottom_right) {
+                auto v = n.velocities.extract(bottom_right);
+                v.value() = top_right;
+                n.velocities.insert(std::move(v));
+            }
+        }
+    }
+     
+    // Left even rows
+    if (i == 0 && j % 2 == 0 && j != 0 && j != c_width) {
+        for (const auto &vel : n.velocities) {
+            if (vel == left) {
+                auto v = n.velocities.extract(left);
+                if (rnd % 2 == 0) {
+                    v.value() = top_left;
+                } else {
+                    v.value() = bottom_left;
+                }
+                n.velocities.insert(std::move(v));
+            }
+        }
+    // Left odd rows
+    } else if (i == 0 && j % 2 == 1 && j != c_width) {
+        for (const auto &vel : n.velocities) {
+            if (vel == left) {
+                auto v = n.velocities.extract(left);
+                if (rnd % 2 == 0) {
+                    v.value() = top_right;
+                } else {
+                    v.value() = bottom_right;
+                }
+                n.velocities.insert(std::move(v));
+            } else if (vel == top_left) {
+                auto v = n.velocities.extract(top_left);
+                v.value() = top_right;
+                n.velocities.insert(std::move(v));
+            } else if (vel == bottom_left) {
+                auto v = n.velocities.extract(bottom_left);
+                v.value() = bottom_right;
+                n.velocities.insert(std::move(v));
+            }
+        }
+    }
+
+    // Right even rows
+    if (i == c_height && j % 2 == 0 && j != 0 && j != c_width) {
+        for (const auto &vel : n.velocities) {
+            if (vel == right) {
+                auto v = n.velocities.extract(right);
+                if (rnd % 2 == 0) {
+                    v.value() = top_right;
+                } else {
+                    v.value() = bottom_right;
+                }
+                n.velocities.insert(std::move(v));
+            }
+        }
+    }
+    // Right odd rows
+    else if (i == (c_height + 1) && j % 2 == 1 && j != c_width) {
+        for (const auto &vel : n.velocities) {
+            if (vel == right) {
+                auto v = n.velocities.extract(right);
+                if (rnd % 2 == 0) {
+                    v.value() = top_left;
+                } else {
+                    v.value() = bottom_left;
+                }
+                n.velocities.insert(std::move(v));
+            } else if (vel == top_right) {
+                auto v = n.velocities.extract(top_right);
+                v.value() = top_left;
+                n.velocities.insert(std::move(v));
+            } else if (vel == bottom_right) {
+                auto v = n.velocities.extract(bottom_right);
+                v.value() = bottom_left;
+                n.velocities.insert(std::move(v));
+            }
+        }
+    }
+    // Particle collision
 }
 
 void LatticeGas::drawNode(const Node &n) {
@@ -437,15 +634,6 @@ void LatticeGas::drawNode(const Node &n) {
             window.draw(node, 2, sf::Lines);
        }
    }
-}
-
-void LatticeGas::drawGrid() {
-    for (int j = 0; j < c_width / 2; ++j) {
-        for (int i = 0; i < 2 * c_height + 1; ++i) {
-            drawTriangle(i, j);
-            drawRTriangle(i, j);
-        }
-    }
 }
 
 void LatticeGas::drawTriangle(const int &i, const int &j) {
@@ -499,13 +687,3 @@ void LatticeGas::drawRTriangle(const int &i, const int &j) {
     window.draw(left, 2, sf::Lines);
     window.draw(right, 2, sf::Lines);
 }
-
-void LatticeGas::handleEvents() {
-    sf::Event event;
-    while (window.pollEvent(event)) {
-        if (event.type == sf::Event::Closed) {
-            window.close();
-        }
-    }
-}
-
