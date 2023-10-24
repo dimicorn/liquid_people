@@ -201,8 +201,6 @@ void LatticeGas::initNodes(const int &N) {
     int particleCount;
     bool isWall;
 
-    // int count = 0;
-
     for (int j = 0; j <= c_width; ++j) {
         /*
         if (j % 2 == 0) {
@@ -400,18 +398,327 @@ Node LatticeGas::checkNeighbors(Node &n, const int &i, const int &j) {
 }
 
 void LatticeGas::checkCollision(Node &n, const int &i, const int &j) {
-    // FIXME: Refactor this shit and seg fault somewhere
-    // Wall collision
+    // FIXME: Refactor this shit
     std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> dist(1, 10);
     int rnd = dist(rng);
+
     /*
-    for (const auto &vel : n.velocities) {
-        std::cout << vel.x << ' ' << vel.y << "hi\n";
+    // Particle collisions
+    // Two particle head-on collision
+    if (n.velocities.find(left) != n.velocities.end() &&
+        n.velocities.find(right) != n.velocities.end()) {
+        auto v = n.velocities.extract(left);
+        auto w = n.velocities.extract(right);
+        if (rnd % 2 == 0) {
+            v.value() = top_left;
+            w.value() = bottom_right;
+        } else {
+            v.value() = bottom_left;
+            w.value() = top_right;
+        }
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(top_left) != n.velocities.end() && 
+            n.velocities.find(bottom_right) != n.velocities.end()) {
+        auto v = n.velocities.extract(top_left);
+        auto w = n.velocities.extract(bottom_right);
+        if (rnd % 2 == 0) {
+            v.value() = left;
+            w.value() = right;
+        } else {
+            v.value() = top_right;
+            w.value() = bottom_left;
+        }
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(bottom_left) != n.velocities.end() && 
+            n.velocities.find(top_right) != n.velocities.end()) {
+        auto v = n.velocities.extract(bottom_left);
+        auto w = n.velocities.extract(top_right);
+        if (rnd % 2 == 0) {
+            v.value() = left;
+            w.value() = right;
+        } else {
+            v.value() = bottom_right;
+            w.value() = top_left;
+        }
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    }
+    // Symmetric three particle collision
+    if (n.velocities.find(left) != n.velocities.end() &&
+            n.velocities.find(top_right) != n.velocities.end() &&
+            n.velocities.find(bottom_right) != n.velocities.end()) {
+        auto v = n.velocities.extract(left);
+        auto w = n.velocities.extract(top_right);
+        auto u = n.velocities.extract(bottom_right);
+        v.value() = top_left;
+        w.value() = right;
+        u.value() = bottom_left;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+        n.velocities.insert(std::move(u));
+    } else if (n.velocities.find(right) != n.velocities.end() &&
+            n.velocities.find(top_left) != n.velocities.end() &&
+            n.velocities.find(bottom_left) != n.velocities.end()) {
+        auto v = n.velocities.extract(right);
+        auto w = n.velocities.extract(top_left);
+        auto u = n.velocities.extract(bottom_left);
+        v.value() = bottom_right;
+        w.value() = top_right;
+        u.value() = left;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+        n.velocities.insert(std::move(u));
+    }
+    // Four particle head-on collision
+    if (n.velocities.find(top_left) != n.velocities.end() &&
+            n.velocities.find(top_right) != n.velocities.end() &&
+            n.velocities.find(bottom_left) != n.velocities.end() &&
+            n.velocities.find(bottom_right) != n.velocities.end()) {
+        auto v = n.velocities.extract(top_left);
+        auto w = n.velocities.extract(top_right);
+        auto u = n.velocities.extract(bottom_left);
+        auto y = n.velocities.extract(bottom_right);
+        if (rnd % 2 == 0) {
+            v.value() = left;
+            w.value() = top_left;
+            u.value() = bottom_right;
+            y.value() = right;
+        } else {
+            v.value() = top_right;
+            w.value() = right;
+            u.value()  = left;
+            y.value() = bottom_left;
+        }
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+        n.velocities.insert(std::move(u));
+        n.velocities.insert(std::move(y));
+    } else if (n.velocities.find(left) != n.velocities.end() &&
+            n.velocities.find(right) != n.velocities.end() &&
+            n.velocities.find(top_right) != n.velocities.end() &&
+            n.velocities.find(bottom_left) != n.velocities.end()) {
+        auto v = n.velocities.extract(left);
+        auto w = n.velocities.extract(right);
+        auto u = n.velocities.extract(top_right);
+        auto y = n.velocities.extract(bottom_left);
+        if (rnd % 2 == 0) {
+            v.value() = bottom_left;
+            w.value() = top_right;
+            u.value() = top_left;
+            y.value() = bottom_right;
+        } else {
+            v.value() = top_left;
+            w.value() = bottom_right;
+            u.value() = right;
+            y.value() = left;
+        }
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+        n.velocities.insert(std::move(u));
+        n.velocities.insert(std::move(y));
+    } else if (n.velocities.find(left) != n.velocities.end() &&
+            n.velocities.find(right) != n.velocities.end() &&
+            n.velocities.find(top_left) != n.velocities.end() &&
+            n.velocities.find(bottom_right) != n.velocities.end()) {
+        auto v = n.velocities.extract(left);
+        auto w = n.velocities.extract(right);
+        auto u = n.velocities.extract(top_left);
+        auto y = n.velocities.extract(bottom_right);
+        if (rnd % 2 == 0) {
+            v.value() = top_left;
+            w.value() = bottom_right;
+            u.value() = top_right;
+            y.value() = bottom_left;
+        } else {
+            v.value() = bottom_left;
+            w.value() = top_right;
+            u.value() = left;
+            y.value() = right;
+        }
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+        n.velocities.insert(std::move(u));
+        n.velocities.insert(std::move(y));
+    }
+    // Two particle collision with spectator
+    if (n.velocities.find(left) != n.velocities.end() &&
+            n.velocities.find(right) != n.velocities.end() &&
+            n.velocities.find(bottom_left) != n.velocities.end()) {
+        auto v = n.velocities.extract(left);
+        auto w = n.velocities.extract(right);
+        v.value() = top_left;
+        w.value() = bottom_right;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(top_left) != n.velocities.end() &&
+            n.velocities.find(bottom_left) != n.velocities.end() &&
+            n.velocities.find(bottom_right) != n.velocities.end()) {
+        auto v = n.velocities.extract(top_left);
+        auto w = n.velocities.extract(bottom_right);
+        v.value() = left;
+        w.value() = right;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(top_right) != n.velocities.end() &&
+            n.velocities.find(bottom_left) != n.velocities.end() &&
+            n.velocities.find(bottom_right) != n.velocities.end()) {
+        auto v = n.velocities.extract(top_right);
+        auto w = n.velocities.extract(bottom_left);
+        v.value() = right;
+        w.value() = left;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(left) != n.velocities.end() &&
+            n.velocities.find(right) != n.velocities.end() &&
+            n.velocities.find(bottom_right) != n.velocities.end()) {
+        auto v = n.velocities.extract(left);
+        auto w = n.velocities.extract(right);
+        v.value() = bottom_left;
+        w.value() = top_right;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(top_left) != n.velocities.end() &&
+            n.velocities.find(top_right) != n.velocities.end() &&
+            n.velocities.find(bottom_left) != n.velocities.end()) {
+        auto v = n.velocities.extract(top_left);
+        auto w = n.velocities.extract(bottom_right);
+        v.value() = left;
+        w.value() = right;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(left) != n.velocities.end() &&
+            n.velocities.find(right) != n.velocities.end() &&
+            n.velocities.find(top_left) != n.velocities.end()) {
+        auto v = n.velocities.extract(left);
+        auto w = n.velocities.extract(right);
+        v.value() = bottom_left;
+        w.value() = top_right;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(top_left) != n.velocities.end() &&
+            n.velocities.find(top_right) != n.velocities.end() &&
+            n.velocities.find(bottom_right) != n.velocities.end()) {
+        auto v = n.velocities.extract(top_left);
+        auto w = n.velocities.extract(bottom_right);
+        v.value() = left;
+        w.value() = right;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(left) != n.velocities.end() &&
+            n.velocities.find(right) != n.velocities.end() &&
+            n.velocities.find(top_right) != n.velocities.end()) {
+        auto v = n.velocities.extract(left);
+        auto w = n.velocities.extract(right);
+        v.value() = top_left;
+        w.value() = bottom_right;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    }
+    // Rest particle collision
+    if (n.velocities.find(zero) != n.velocities.end() &&
+            n.velocities.find(left) != n.velocities.end()) {
+        auto v = n.velocities.extract(zero);
+        auto w = n.velocities.extract(left);
+        v.value() = top_left;
+        w.value() = bottom_left;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(top_left) != n.velocities.end() && 
+            n.velocities.find(bottom_left) != n.velocities.end()) {
+        auto v = n.velocities.extract(top_left);
+        auto w = n.velocities.extract(bottom_left);
+        v.value() = zero;
+        w.value() = left;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(zero) != n.velocities.end() &&
+            n.velocities.find(top_left) != n.velocities.end()) {
+        auto v = n.velocities.extract(zero);
+        auto w = n.velocities.extract(top_left);
+        v.value() = left;
+        w.value() = top_right;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(left) != n.velocities.end() &&
+            n.velocities.find(top_right) != n.velocities.end()) {
+        auto v = n.velocities.extract(left);
+        auto w = n.velocities.extract(top_right);
+        v.value() = zero;
+        w.value() = top_left;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(zero) != n.velocities.end() &&
+            n.velocities.find(top_right) != n.velocities.end()) {
+        auto v = n.velocities.extract(zero);
+        auto w = n.velocities.extract(top_right);
+        v.value() = top_left;
+        w.value() = right;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(top_left) != n.velocities.end() &&
+            n.velocities.find(right) != n.velocities.end()) {
+        auto v = n.velocities.extract(top_left);
+        auto w = n.velocities.extract(right);
+        v.value() = zero;
+        w.value() = top_right;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(zero) != n.velocities.end() &&
+            n.velocities.find(right) != n.velocities.end()) {
+        auto v = n.velocities.extract(zero);
+        auto w = n.velocities.extract(right);
+        v.value() = top_right;
+        w.value() = bottom_right;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(top_right) != n.velocities.end() &&
+            n.velocities.find(bottom_right) != n.velocities.end()) {
+        auto v = n.velocities.extract(top_right);
+        auto w = n.velocities.extract(bottom_right);
+        v.value() = zero;
+        w.value() = right;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(zero) != n.velocities.end() &&
+            n.velocities.find(bottom_right) != n.velocities.end()) {
+        auto v = n.velocities.extract(zero);
+        auto w = n.velocities.extract(bottom_right);
+        v.value() = right;
+        w.value() = bottom_left;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(right) != n.velocities.end() &&
+            n.velocities.find(bottom_left) != n.velocities.end()) {
+        auto v = n.velocities.extract(right);
+        auto w = n.velocities.extract(bottom_left);
+        v.value() = zero;
+        w.value() = bottom_right;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(zero) != n.velocities.end() &&
+            n.velocities.find(bottom_left) != n.velocities.end()) {
+        auto v = n.velocities.extract(zero);
+        auto w = n.velocities.extract(bottom_left);
+        v.value() = left;
+        w.value() = bottom_right;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
+    } else if (n.velocities.find(left) != n.velocities.end() &&
+            n.velocities.find(bottom_right) != n.velocities.end()) {
+        auto v = n.velocities.extract(left);
+        auto w = n.velocities.extract(bottom_right);
+        v.value() = zero;
+        w.value() = bottom_left;
+        n.velocities.insert(std::move(v));
+        n.velocities.insert(std::move(w));
     }
     */
 
+    // Wall collision
     // Top left node
     if (i == 0 && j == 0) {
         if (n.velocities.find(left) != n.velocities.end()) {
@@ -561,7 +868,6 @@ void LatticeGas::checkCollision(Node &n, const int &i, const int &j) {
             n.velocities.insert(std::move(v));
         }
     }
-    // Particle collision
 }
 
 void LatticeGas::drawNode(const Node &n) {

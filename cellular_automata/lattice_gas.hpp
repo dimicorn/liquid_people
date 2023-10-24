@@ -53,6 +53,11 @@ private:
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
+                int count = 0;
+                for (const auto &n : nodes) {
+                    count += n.particleCount;
+                }
+                std::cout << "Number of particles in the end of experiment: " << count << '\n';
                 window.close();
             }
         }
@@ -71,17 +76,13 @@ public:
     }
     
 	void run() {
-        sf::Time t = sf::milliseconds(100);
-        // int count = 0;
+        sf::Time t = sf::milliseconds(500);
         while(window.isOpen()) {
             window.clear();
 
             drawGrid();
             drawNodes();
-            // if (count < 7) {
-                updateNodes();
-                // ++count;
-            // }
+            updateNodes();
             window.display();
             handleEvents();
             sf::sleep(t);
