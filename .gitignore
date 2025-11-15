@@ -1,4 +1,3 @@
 .vscode
-out
-output.txt
-todo
+.DS_Store
+build
